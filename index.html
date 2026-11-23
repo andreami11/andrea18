@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sei invitato alla mia festa!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --night:#1a1d4a; --night2:#272a6b; --flame:#ffd24a; --pink:#ff5fa2; --mint:#5ce1c0; --paper:#fff6e8; --ink:#1a1d4a;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,var(--night2),var(--night) 70%);color:var(--paper);font-family:"Bricolage Grotesque",system-ui,sans-serif;overflow-x:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.stage{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:8px}
+h1{font-weight:800;font-size:clamp(2.2rem,9vw,4.6rem);line-height:1;margin:0;letter-spacing:-.02em;max-width:12ch}
+.sub{font-size:1.1rem;opacity:.8;margin:0 0 12px;max-width:30ch}
+.cake{width:min(260px,70vw);height:auto;overflow:visible}
+.flame{transform-origin:50% 100%;animation:flick .5s ease-in-out infinite alternate;transition:opacity .35s,transform .35s}
+.glow{animation:pulse 1.2s ease-in-out infinite alternate;transition:opacity .35s}
+.out .flame,.out .glow{opacity:0;animation:none}
+.out .flame{transform:scaleY(.2)}
+.smoke{opacity:0}
+.out .smoke{animation:smoke 2s ease-out forwards}
+@keyframes flick{from{transform:scale(1,1) rotate(-3deg)}to{transform:scale(.9,1.1) rotate(3deg)}}
+@keyframes pulse{from{opacity:.35}to{opacity:.7}}
+@keyframes smoke{0%{opacity:.7;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+button{font:inherit;font-weight:800;font-size:1.15rem;border:0;border-radius:999px;padding:16px 30px;background:var(--flame);color:var(--ink);cursor:pointer;transition:transform .15s,background .2s}
+button:hover{transform:scale(1.05)}
+button:active{transform:scale(.97)}
+:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.hint{font-size:.95rem;opacity:.65;margin-top:6px}
+.card{max-width:480px;margin:0 auto;padding:0 20px 90px;display:none}
+.card.show{display:block}
+.deck{display:flex;flex-direction:column;gap:20px}
+.tile{background:var(--c);color:var(--ink);border:3px solid var(--ink);border-radius:22px;padding:18px 22px;box-shadow:6px 6px 0 var(--paper);rotate:var(--r);display:flex;flex-direction:column}
+.tile.big{align-self:flex-start;padding:6px 30px 12px;border-radius:30px}
+.tile.big span{font-size:clamp(5rem,26vw,8rem);font-weight:800;line-height:.95;letter-spacing:-.04em}
+.tile.big small{font-size:1.4rem;font-weight:800;margin-top:-6px}
+.k{font-size:.95rem;font-weight:400;opacity:.7}
+.v{font-weight:800;font-size:1.6rem;line-height:1.1}
+.s{font-size:1rem;margin-top:4px}
+.msg{font-size:1.25rem;line-height:1.4;margin:6px 4px}
+.aka{align-self:flex-start;rotate:-2deg;background:var(--flame);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:4px 14px;font-weight:800;font-size:.9rem;margin:0 0 -12px 4px;box-shadow:3px 3px 0 var(--paper)}
+.line{opacity:0;transform:translateY(16px)}
+.show .line{animation:in .55s cubic-bezier(.3,1.6,.5,1) forwards;animation-delay:calc(var(--i)*.16s)}
+@keyframes in{to{opacity:1;transform:none}}
+.btns{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.cta{text-align:center;text-decoration:none;font-weight:800;font-size:1.2rem;border-radius:999px;padding:16px 26px;transition:transform .15s}
+.cta:hover{transform:scale(1.04)}
+.cta.yes{background:var(--mint);color:var(--ink);box-shadow:0 5px 0 #2a9e82}
+.cta.no{border:2px solid var(--paper);color:var(--paper)}
+@media (prefers-reduced-motion:reduce){.flame,.glow{animation:none}.show .line{animation:none;opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+
+<main>
+  <section class="stage" id="stage">
+    <h1 id="t1">Ho una cosa da dirti…</h1>
+    <p class="sub" id="t2">Prima però devi spegnere la candela.</p>
+    <svg class="cake" id="cake" viewBox="0 0 260 230" role="img" aria-label="Torta con una candela accesa">
+      <ellipse class="glow" cx="130" cy="42" rx="52" ry="52" fill="#ffd24a" opacity=".5"/>
+      <g class="smoke"><circle cx="130" cy="40" r="6" fill="#fff6e8"/><circle cx="136" cy="28" r="4" fill="#fff6e8"/></g>
+      <path class="flame" d="M130 18c14 16 16 28 0 40-16-12-14-24 0-40z" fill="#ffd24a"/>
+      <path class="flame" d="M130 36c6 7 7 12 0 18-7-6-6-11 0-18z" fill="#ff5fa2"/>
+      <rect x="125" y="56" width="10" height="46" rx="3" fill="#5ce1c0"/>
+      <rect x="30" y="100" width="200" height="50" rx="12" fill="#ff5fa2"/>
+      <path d="M30 118c20 14 30-6 50 8s30-6 50 8 30-6 50 8 20 2 50-6v14H30z" fill="#fff6e8"/>
+      <rect x="10" y="150" width="240" height="64" rx="14" fill="#fff6e8"/>
+      <rect x="10" y="190" width="240" height="24" rx="12" fill="#ffd24a"/>
+    </svg>
+    <button id="blow" type="button">Soffia sulla candela</button>
+    <span class="hint" id="hint">oppure tocca la fiamma</span>
+  </section>
+
+  <section class="card" id="card" aria-live="polite">
+    <div class="deck">
+      <div class="tile big line" style="--i:0;--r:-4deg;--c:var(--flame)"><span id="age"></span><small>anni</small></div>
+      <p class="msg line" style="--i:1" id="msg"></p>
+      <div class="tile line" style="--i:2;--r:2deg;--c:var(--mint)"><span class="k">Quando</span><span class="v" id="when"></span></div>
+      <div class="tile line" style="--i:3;--r:-2deg;--c:var(--pink)"><span class="k">Dove</span><span class="v" id="where"></span><span class="s" id="where2"></span></div>
+      <div class="tile line" style="--i:4;--r:1.5deg;--c:var(--paper)" id="note"></div>
+      <div class="btns line" style="--i:5">
+        <a class="cta yes" id="yes" href="#">Ci sono! 🎉</a>
+        <a class="cta no" id="no" href="#">Purtroppo non riesco</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ===== MODIFICA QUI I TUOI DATI ===== */
+var INVITO = {
+  eta: "18",
+  messaggio: "Sono Andrea e faccio 18 anni! Voglio festeggiarli con te: musica, cibo e buona compagnia.",
+  quando: "Sabato 12 dicembre, ore 19:45",
+  dove: "Buono Come il Pane",
+  dove2: "Via Roma, 14, 45030 Villamarzana (RO)",
+  nota: "Porta solo la voglia di divertirti.",
+  gruppo: "https://chat.whatsapp.com/Jd45hGTBTBmCaFe9PlNkeP?s=cl&p=i&iam=2",
+  whatsapp: "393805895797",
+  rispostaNo: "Ciao Andrea! Mi dispiace tanto, ma al tuo 18° non riesco ad esserci. Buona serata 🙂"
+};
+/* ==================================== */
+
+var $ = function(id){ return document.getElementById(id); };
+$("t1").textContent = "Ciao, c’è una novità per te…";
+$("age").textContent = INVITO.eta;
+$("msg").textContent = INVITO.messaggio;
+$("when").textContent = INVITO.quando;
+$("where").textContent = INVITO.dove;
+$("where2").textContent = INVITO.dove2;
+$("note").textContent = INVITO.nota;
+$("yes").href = INVITO.gruppo;
+$("no").href = "https://wa.me/" + INVITO.whatsapp + "?text=" + encodeURIComponent(INVITO.rispostaNo);
+
+var cv = $("c"), cx = cv.getContext("2d"), parts = [], running = false;
+var colors = ["#ffd24a","#ff5fa2","#5ce1c0","#fff6e8"];
+function size(){ cv.width = innerWidth; cv.height = innerHeight; }
+size(); addEventListener("resize", size);
+
+function burst(){
+  for (var i = 0; i < 160; i++) {
+    var a = Math.random() * Math.PI * 2, s = 6 + Math.random() * 10;
+    parts.push({ x: cv.width / 2, y: cv.height * 0.4, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 6,
+      w: 6 + Math.random() * 6, h: 10 + Math.random() * 6, r: Math.random() * 6, vr: Math.random() * .4 - .2,
+      c: colors[i % colors.length], life: 160 + Math.random() * 60 });
+  }
+  if (!running) { running = true; tick(); }
+}
+function tick(){
+  cx.clearRect(0, 0, cv.width, cv.height);
+  parts = parts.filter(function(p){ return p.life > 0 && p.y < cv.height + 20; });
+  parts.forEach(function(p){
+    p.vy += .25; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+    cx.globalAlpha = Math.min(1, p.life / 40); cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore();
+  });
+  if (parts.length) requestAnimationFrame(tick); else running = false;
+}
+
+var done = false;
+function blow(){
+  if (done) return; done = true;
+  $("cake").classList.add("out");
+  $("cake").setAttribute("aria-label", "Candela spenta");
+  $("t1").textContent = "Brava, anzi bravo!";
+  $("t2").textContent = "Ecco il tuo invito:";
+  $("blow").style.display = "none"; $("hint").style.display = "none";
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) burst();
+  setTimeout(function(){
+    $("card").classList.add("show");
+    $("card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 900);
+}
+$("blow").addEventListener("click", blow);
+$("cake").addEventListener("click", blow);
+</script>
+</body>
+</html>
